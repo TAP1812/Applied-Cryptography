@@ -152,23 +152,24 @@ class Keychain {
                 if (validPadding) {
                     plaintext = paddedPlaintext.substring(0, MAX_PASSWORD_LENGTH - paddingLength);
                 } else {
-                    plaintext = paddedPlaintext; // Or throw an error: "Invalid PKCS#7 padding detected!";
+                    throw new Error("Invalid PKCS#7 padding detected!");
                 }
             } else {
                 // No valid padding found, assume the entire string is valid plaintext
                 // In this specific case, the plaintext will be the max length (MAX_PASSWORD_LENGTH)
                 // or the padding is wrong.  For security reasons, the decryption should probably fail
-                plaintext = paddedPlaintext;  // Or throw an error: "Invalid PKCS#7 padding length!";
+                throw new Error("Invalid PKCS#7 padding length!");
             }
-            const tagBuffer = await subtle.digest(
-              "SHA-256",
-              Buffer.concat([stringToBuffer(plaintext), decodeBuffer(hmacValue)])
-            );
-        
-            if (tag !== encodeBuffer(new Uint8Array(tagBuffer))) {
-              throw new Error("Tag mismatch: Possible swap attack detected!");
-            }
+              const newTagBuffer = await subtle.sign(
+                "HMAC",
+                hmacKey,
+                stringToBuffer(hmacValue.concat(plaintext))
+              );
+              const newTagString = encodeBuffer(new Uint8Array(newTagBuffer));
 
+              if (tag !== newTagString) {
+                throw new Error(`Tag mismatch: Possible swap attack detected!\nStored Tag: ${tag}\nCalculated Tag: ${newTagString}`);
+              }
         } catch (error) {
           // If decryption fails for any entry, it indicates an incorrect password
           throw new Error("Incorrect password provided for keychain.");
@@ -255,22 +256,19 @@ class Keychain {
         if (validPadding) {
             plaintext = paddedPlaintext.substring(0, MAX_PASSWORD_LENGTH - paddingLength);
         } else {
-            plaintext = paddedPlaintext; // Or throw an error: "Invalid PKCS#7 padding detected!";
+            throw new Error("Invalid PKCS#7 padding detected!");
         }
     } else {
         // No valid padding found, assume the entire string is valid plaintext
         // In this specific case, the plaintext will be the max length (MAX_PASSWORD_LENGTH)
         // or the padding is wrong.  For security reasons, the decryption should probably fail
-        plaintext = paddedPlaintext;  // Or throw an error: "Invalid PKCS#7 padding length!";
+        throw new Error("Invalid PKCS#7 padding length!");
     }
 
-    const tagBuffer = await subtle.digest(
-      "SHA-256",
-      Buffer.concat([stringToBuffer(plaintext), decodeBuffer(hmacValue)])
-    );
+    const tagNew = (await this.calculateHmac(hmacValue.concat(plaintext))).toString();
 
-    if (tag !== encodeBuffer(new Uint8Array(tagBuffer))) {
-      throw new Error("Tag mismatch: Possible swap attack detected!");
+    if (tag !== tagNew) {
+      throw new Error(`Tag mismatch: Possible swap attack detected!\nStored Tag: ${tag}\nCalculated Tag: ${tagNew}`);
     }
 
     return plaintext;
@@ -307,17 +305,14 @@ class Keychain {
       stringToBuffer(paddedValue)
     );
 
-    // Calculate tag = SHA-256(HMAC(domain) + plaintext)
+    // Calculate tag = HMAC(HMAC(domain) + password))
     // This implementation can prevent swap attacks
-    const tagBuffer = await subtle.digest(
-      "SHA-256",
-      Buffer.concat([stringToBuffer(value), decodeBuffer(hmacValue)])
-    );
+    const tag =  await this.calculateHmac(hmacValue.concat(value));
 
     this.secrets.kvs[hmacValue] = {
       ciphertext: encodeBuffer(new Uint8Array(ciphertextBuffer)),
       iv: encodeBuffer(iv),
-      tag: encodeBuffer(new Uint8Array(tagBuffer))
+      tag: tag
     };
   };
 
