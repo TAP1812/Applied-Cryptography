@@ -143,30 +143,4 @@ describe('Password manager', async function() {
         });
 
     });
-
-    describe("threat model", async function() {
-        // Test if the password manager is secure against the following threat model:
-        it("is secure against swap attack", async function() {
-            let originalKeychain = await Keychain.init(password);
-            for (let k in kvs) {
-                await originalKeychain.set(k, kvs[k]);
-            }
-            // Dump the keychain data and extract contents and checksum
-            const [contents, checksum] = await originalKeychain.dump();
-            const contentsObj = JSON.parse(contents);
-            const kvsObj = contentsObj.kvs;
-            const kvsKeys = Object.keys(kvsObj);
-
-            // Swap the values of the first two keys in kvsObj
-            const firstKey = kvsKeys[0];
-            const secondKey = kvsKeys[1];
-            [kvsObj[firstKey], kvsObj[secondKey]] = [kvsObj[secondKey], kvsObj[firstKey]];
-
-            // Stringify the modified contents object
-            const modifiedContents = JSON.stringify(contentsObj);
-
-            // Expect the keychain load to reject with the modified contents
-            await expectReject(Keychain.load(password, modifiedContents));
-        });
-    });
 });

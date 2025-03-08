@@ -1,0 +1,64 @@
+{
+  "name": "snazzy",
+  "description": "Format JavaScript Standard Style as Stylish (i.e. snazzy) output",
+  "version": "9.0.0",
+  "author": {
+    "name": "Feross Aboukhadijeh",
+    "email": "feross@feross.org",
+    "url": "https://feross.org"
+  },
+  "bin": {
+    "snazzy": "./bin/cmd.js"
+  },
+  "bugs": {
+    "url": "https://github.com/feross/snazzy/issues"
+  },
+  "dependencies": {
+    "chalk": "^4.1.0",
+    "inherits": "^2.0.4",
+    "minimist": "^1.2.5",
+    "readable-stream": "^3.6.0",
+    "standard-json": "^1.1.0",
+    "strip-ansi": "^6.0.0",
+    "text-table": "^0.2.0"
+  },
+  "devDependencies": {
+    "standard": "*"
+  },
+  "homepage": "https://github.com/feross/snazzy",
+  "keywords": [
+    "pretty",
+    "pretty output",
+    "snazzy standard",
+    "standard",
+    "standard pretty",
+    "stylish",
+    "stylish for standard",
+    "stylish formatter",
+    "stylish reporter",
+    "stylish standard"
+  ],
+  "license": "MIT",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/feross/snazzy.git"
+  },
+  "scripts": {
+    "test": "standard --verbose | ./bin/cmd.js"
+  },
+  "funding": [
+    {
+      "type": "github",
+      "url": "https://github.com/sponsors/feross"
+    },
+    {
+      "type": "patreon",
+      "url": "https://www.patreon.com/feross"
+    },
+    {
+      "type": "consulting",
+      "url": "https://feross.org/support"
+    }
+  ]
+}

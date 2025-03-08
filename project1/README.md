@@ -45,4 +45,4 @@ system without compromising security for other sites that these users may wish t
 passwords of? That is, if Alice and Bob wish to access one stored password (say for nytimes)
 that either of them can get and update, without allowing the other to access their passwords
 for other websites.</b><br>
-=> 
+=> To add multi-user support for specific sites, like nytimes.com for Alice and Bob, I would implement a shared keychain. Each user would still have their individual keychains, protected by their personal master passwords. However, for sites they wish to share, instead of storing the password in their personal keychain, a reference would be stored, pointing to an entry in a separate, shared keychain. This shared keychain would then be protected by a separate authentication mechanism. When Alice (or Bob) attempt to access nytimes.com, their password manager would detect the reference to the shared keychain, and instead retrieve credentials by authenticating them against the shared keychain. Other passwords will be unaffected.
